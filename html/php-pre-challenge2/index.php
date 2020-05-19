@@ -2,6 +2,7 @@
 $array = explode(',', $_GET['array']);
 
 // 修正はここから
+// バブルソートの考え方は(https://www.youtube.com/watch?v=Hy5DhsGYykw)を参考にしました。
 // (配列の中身の数-1)回ソートを繰り返す
 for ($i = 1; $i < count($array); $i++) {
     // index番号0から、最後から１つ手前のindex番号まで1ずつ増やす（比較対象を移動）
