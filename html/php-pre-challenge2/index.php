@@ -12,10 +12,10 @@ for ($i = $last; $i > 0; $i--) {
     // その際、$lastは1周毎に1つずつ左にずれ、比較範囲を減らしている。
     for ($index = 0; $index < $last; $index++) {
         // 右隣の数字と比較してそれより大きい場合のみ、配列の中身を入れ替えて上書き
-        if ($array[$index] > $array[$index+1]) {
+        if ($array[$index] > $array[$index + 1]) {
             $temporaryIndex = $array[$index];
-            $array[$index] = $array[$index+1];
-            $array[$index+1] = $temporaryIndex;
+            $array[$index] = $array[$index + 1];
+            $array[$index + 1] = $temporaryIndex;
         }
     }
 }
