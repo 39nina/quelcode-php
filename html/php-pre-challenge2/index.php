@@ -8,6 +8,7 @@ $listCount = count($array);
 $last = $listCount - 1; 
 // (配列の中身の数-1)回ソートを繰り返す
 for ($i = $last; $i > 0; $i--) {
+    $last = $i;
     // index番号0から、最後から1つ手前($last)のindex番号まで1つずつ増やす。
     // その際、$lastは1周毎に1つずつ左にずれ、比較範囲を減らしている。
     for ($index = 0; $index < $last; $index++) {
