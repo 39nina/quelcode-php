@@ -7,19 +7,19 @@ $dbpassword = 'test';
 
 // $limitが正の整数かどうかチェック、正の整数でなければHTMLレスポンシブコード400を返す
 if(!ctype_digit($limit)) {
-    http_response_code(400) ;
+    http_response_code(400);
     exit();
 }
 // 上記で$limitが正の10進数字であることが確認できたのでint型に変換、0の場合も400を返すためチェック
 $limit = (int)$limit;
 if($limit === 0) {
-    http_response_code(400) ;
+    http_response_code(400);
     exit();
 }
 
 // DB接続
 try {
-    $db = new PDO($dsn,$dbuser, $dbpassword);
+    $db = new PDO($dsn, $dbuser, $dbpassword);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {
     echo 'DB接続エラー：' . $e->getMessage();
@@ -62,7 +62,7 @@ for($k = 1; $k < ($sumCount + 1); $k++) {
     $temps = combination($record, $k);
     foreach($temps as $temp) {
         if(array_sum($temp) === $limit) {
-            array_push($combi,$temp);
+            array_push($combi, $temp);
         }
     }
 }
