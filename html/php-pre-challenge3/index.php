@@ -20,9 +20,9 @@ if($limit === 0) {
 // DB接続
 try {
     $db = new PDO($dsn, $dbuser, $dbpassword);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {
     echo 'DB接続エラー：' . $e->getMessage();
+    http_response_code(404);
     exit();
 }
 
