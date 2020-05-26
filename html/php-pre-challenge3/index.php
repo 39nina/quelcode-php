@@ -6,17 +6,16 @@ $dbuser = 'test';
 $dbpassword = 'test';
 
 // $limitが正の整数かどうかチェック、正の整数でなければHTMLレスポンシブコード400を返す
-function positiveNumber($value) {
-    $value2 = (float)$value;
-    return intval($value) == $value2 && $value2 > 0;
-}
-if(!positiveNumber($limit)) {
+if(!ctype_digit($limit)) {
     http_response_code(400) ;
     exit();
 }
-
-// 上記で整数であることが確認できているのでint型に変換
+// 上記で$limitが正の10進数字であることが確認できたのでint型に変換、0の場合も400を返すためチェック
 $limit = (int)$limit;
+if($limit === 0) {
+    http_response_code(400) ;
+    exit();
+}
 
 // DB接続
 try {
