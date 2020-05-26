@@ -20,13 +20,14 @@ $limit = (int)$limit;
 
 // DB接続
 try {
-    $db = new PDO('mysql:dbname=test;host=mysql;charset=utf8','test', 'test');
+    $db = new PDO($dsn,$dbuser2, $dbpassword);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {
     echo 'DB接続エラー：' . $e->getMessage();
     exit();
 }
 
-// データベースの値の取り出し
+// DBの値の取り出し
 $records = $db->query('SELECT * FROM prechallenge3');
 $record = $records->fetchAll(PDO::FETCH_COLUMN);
 $record = array_map('intval', $record);
@@ -70,5 +71,3 @@ for($k = 1; $k < ($sumCount + 1); $k++) {
 // json形式で出力
 $json_combi = json_encode($combi);
 print($json_combi);
-
-?>
