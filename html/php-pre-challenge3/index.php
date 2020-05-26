@@ -19,7 +19,7 @@ if($limit === 0) {
 
 // DB接続
 try {
-    $db = new PDO($dsn,$dbuser2, $dbpassword);
+    $db = new PDO($dsn,$dbuser, $dbpassword);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {
     echo 'DB接続エラー：' . $e->getMessage();
@@ -53,7 +53,7 @@ function combination ($array, $pick) {
         }
     }
     return $arrays;
-  }
+}
 
 // combinationファンクションを使い、全組み合わせから$limitと一致するものを配列$combiに代入
 $sumCount = count($record);
