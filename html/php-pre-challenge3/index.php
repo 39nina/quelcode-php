@@ -28,8 +28,7 @@ try {
 
 // DBの値の取り出し
 $records = $db->query('SELECT * FROM prechallenge3');
-$record = $records->fetchAll(PDO::FETCH_COLUMN);
-$record = array_map('intval', $record);
+$record = array_map('intval', $records->fetchAll(PDO::FETCH_COLUMN));
 
 // $array:配列全体、$pick:組み合わせる値の数として全ての組み合わせを返すファンクションcombinationを作成
 // 参考にしたページ（https://stabucky.com/wp/archives/2188）
@@ -58,8 +57,8 @@ function combination ($array, $pick) {
 // combinationファンクションを使い、全組み合わせから$limitと一致するものを配列$combiに代入
 $sumCount = count($record);
 $combi = [];
-for($k = 1; $k < ($sumCount + 1); $k++) {
-    $temps = combination($record, $k);
+for($i = 1; $i < ($sumCount + 1); $i++) {
+    $temps = combination($record, $i);
     foreach($temps as $temp) {
         if(array_sum($temp) === $limit) {
             array_push($combi, $temp);
