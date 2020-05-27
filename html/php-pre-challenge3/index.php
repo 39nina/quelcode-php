@@ -34,9 +34,7 @@ $records = array_map('intval', $statement->fetchAll(PDO::FETCH_COLUMN));
 // 参考にしたページ（https://stabucky.com/wp/archives/2188）
 function combination ($array, $pick) {
     $count = count($array);
-    if($count < $pick) {   // 組み合わせにつかう数が配列の総数を超える場合、成立しないためif文の処理を終了
-        return;
-    } elseif($pick === 1) {  // 配列$arrayのうち単独の値で$limitとの一致を確認する場合、その値を$arrays[$i]に代入
+    if($pick === 1) {  // 配列$arrayのうち単独の値で$limitとの一致を確認する場合、その値を$arrays[$i]に代入
         for($i = 0; $i < $count; $i++) {
             $arrays[$i] = [$array[$i]];
         }
