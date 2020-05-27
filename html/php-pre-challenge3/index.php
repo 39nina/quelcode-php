@@ -38,7 +38,7 @@ function combination ($array, $pick) {
         return;
     } elseif($pick === 1) {  // 配列$arrayのうち単独の値で$limitとの一致を確認する場合、その値を$arrays[$i]に代入
         for($i = 0; $i < $count; $i++) {
-        $arrays[$i] = array($array[$i]);
+            $arrays[$i] = [$array[$i]];
         }
     } elseif($pick > 1) {  // 配列$arrayのうち複数の値を組み合わせて$limitとの一致を確認する場合、組み合わせの１項目めを固定とするため一度除外して２項目め以降で組み合わせを作る。その後、１項目めを組み合わせ配列$otherPartの頭に挿入し、$arrays[$j]に代入（再帰処理される）
         $j = 0;
