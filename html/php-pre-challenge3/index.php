@@ -22,7 +22,7 @@ try {
     $db = new PDO($dsn, $dbuser, $dbpassword);
 } catch(PDOException $e) {
     echo 'DB接続エラー：' . $e->getMessage();
-    http_response_code(404);
+    http_response_code(500);
     exit();
 }
 
