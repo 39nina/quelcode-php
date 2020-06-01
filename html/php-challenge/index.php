@@ -44,7 +44,7 @@ $page = min($page, $maxPage);
 $start = ($page - 1) * 5;
 $start = max(0, $start);
 
-$posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id ORDER BY p.created DESC LIMIT ?, 5');
+$posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id AND delete_flg=0 ORDER BY p.created DESC LIMIT ?, 5');
 $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
 
@@ -124,8 +124,28 @@ style="color: #F33;">削除</a>]
 <?php
 endif;
 ?>
-    </p>
-    </div>
+<?php // いいねテーブル(favTBL)のログインユーザー情報の変数化
+$statement = $db->prepare('SELECT * FROM fav WHERE member_id=? AND post_id=?');
+$statement->execute(array(h($_SESSION['id']),h($post['id'])));
+$fav = (int)($statement->fetch()['fav_flg']);
+?>
+<a href="fav.php?id=<?php echo h($post['id']); ?>"></a><a href="fav.php?id=<?php echo h($post['id']); ?>">
+<span style="
+<?php if ($fav === 1) { print 'color:red;'; } ?>
+text-decoration:none; font-size:15px">
+&hearts;</span></a>
+<?php
+// 当該ツイートの全ユーザーのいいね数を出力
+$statement = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=?');
+$statement->bindParam(1,$post['id'],PDO::PARAM_INT);
+$statement->execute();
+$favs = (int)$statement->fetch()['SUM(fav_flg)'];
+if($favs > 0) {
+	print $favs;
+}
+?>
+</p>
+</div>
 <?php
 endforeach;
 ?>
