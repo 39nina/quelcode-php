@@ -106,7 +106,8 @@ foreach ($posts as $post):
     <div class="msg">
     <img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
     <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
-    <p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
+	<div style="display:flex;">
+	<p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
 		<?php
 if ($post['reply_post_id'] > 0):
 ?>
@@ -124,16 +125,40 @@ style="color: #F33;">削除</a>]
 <?php
 endif;
 ?>
+</p>
+<p>
+<p style="font-size:15px; padding-left:20px;">
+<?php // rtテーブルのログインユーザー情報の変数化
+$statement = $db->prepare('SELECT * FROM rt WHERE member_id=? AND post_id=?');
+$statement->execute(array(h($_SESSION['id']),h($post['id'])));
+$rt = (int)($statement->fetch()['rt_flg']);
+?>
+<a href="rt.php?id=<?php echo h($post['id']); ?>" style="background:url(images/rt.png)"><img alt="retweet" src="images/rt<?php if ($rt === 1) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
+
+<span style="color:<?php if($rt === 1) { print 2;} else { print '#999';} ?>">
+<?php // 当該ツイートの全ユーザーのいいね数を出力
+$statement = $db->prepare('SELECT SUM(rt_flg) FROM rt WHERE post_id=?');
+$statement->bindParam(1,$post['id'],PDO::PARAM_INT);
+$statement->execute();
+$rts = (int)$statement->fetch()['SUM(rt_flg)'];
+if($rts > 0) {
+	print $rts;
+} else {
+	print "&nbsp;&nbsp;";
+}
+?>
+</span>
+
+</p>
+<p style="font-size:15px; padding-left:7px;">
 <?php // いいねテーブル(favTBL)のログインユーザー情報の変数化
 $statement = $db->prepare('SELECT * FROM fav WHERE member_id=? AND post_id=?');
 $statement->execute(array(h($_SESSION['id']),h($post['id'])));
 $fav = (int)($statement->fetch()['fav_flg']);
 ?>
-<a href="fav.php?id=<?php echo h($post['id']); ?>"></a><a href="fav.php?id=<?php echo h($post['id']); ?>">
-<span style="
-<?php if ($fav === 1) { print 'color:red;'; } ?>
-text-decoration:none; font-size:15px">
-&hearts;</span></a>
+<a href="fav.php?id=<?php echo h($post['id']); ?>" style="background:url(images/fav.png)"><img alt="fav" src="images/fav<?php if ($fav === 1) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
+
+<span style="color:<?php if($fav === 1) { print 2;} else { print '#999';} ?>">
 <?php
 // 当該ツイートの全ユーザーのいいね数を出力
 $statement = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=?');
@@ -144,7 +169,10 @@ if($favs > 0) {
 	print $favs;
 }
 ?>
+</span>
 </p>
+</p>
+</div>
 </div>
 <?php
 endforeach;
