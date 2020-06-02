@@ -133,10 +133,10 @@ $statement = $db->prepare('SELECT * FROM rt WHERE member_id=? AND post_id=?');
 $statement->execute(array(h($_SESSION['id']),h($post['id'])));
 $rt = (int)($statement->fetch()['rt_flg']);
 ?>
-<a href="rt.php?id=<?php echo h($post['id']); ?>" style="background:url(images/rt.png)"><img alt="retweet" src="images/rt<?php if ($rt === 1) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
+<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($rt === 1) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
 
-<span style="color:<?php if($rt === 1) { print 2;} else { print '#999';} ?>">
-<?php // 当該ツイートの全ユーザーのいいね数を出力
+<span style="color:<?php if($rt === 1) { print "#3CB371";} else { print '#999';} ?>">
+<?php // 当該ツイートの全ユーザーのRT数を出力
 $statement = $db->prepare('SELECT SUM(rt_flg) FROM rt WHERE post_id=?');
 $statement->bindParam(1,$post['id'],PDO::PARAM_INT);
 $statement->execute();
@@ -151,14 +151,14 @@ if($rts > 0) {
 
 </p>
 <p style="font-size:15px; padding-left:7px;">
-<?php // いいねテーブル(favTBL)のログインユーザー情報の変数化
+<?php // favテーブルのログインユーザー情報の変数化
 $statement = $db->prepare('SELECT * FROM fav WHERE member_id=? AND post_id=?');
 $statement->execute(array(h($_SESSION['id']),h($post['id'])));
 $fav = (int)($statement->fetch()['fav_flg']);
 ?>
-<a href="fav.php?id=<?php echo h($post['id']); ?>" style="background:url(images/fav.png)"><img alt="fav" src="images/fav<?php if ($fav === 1) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
+<a href="fav.php?id=<?php echo h($post['id']); ?>"><img alt="fav" src="images/fav<?php if ($fav === 1) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
 
-<span style="color:<?php if($fav === 1) { print 2;} else { print '#999';} ?>">
+<span style="color:<?php if($fav === 1) { print 'red';} else { print '#999';} ?>">
 <?php
 // 当該ツイートの全ユーザーのいいね数を出力
 $statement = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=?');
