@@ -12,8 +12,14 @@ if (isset($_SESSION['id'])) {
 
 	if ($message['member_id'] == $_SESSION['id']) {
 		// 削除する
-		$del = $db->prepare('UPDATE posts SET delete_flg=1 WHERE id=?');
-		$del->execute(array($id));
+		$st = $db->prepare('SELECT * FROM posts WHERE id=?');
+		$st->execute(array($id));
+		$org = $st->fetch();
+		$del = $db->prepare('UPDATE posts SET delete_flg=1 WHERE original_post_id=?');
+		$del->execute(array($org['original_post_id']));
+		// rtTBLのrt_flgも削除
+		$st = $db->prepare('UPDATE rt SET rt_flg=0 WHERE original_post_id');
+		$st->execute(array($org['original_post_id']));
 	}
 }
 
