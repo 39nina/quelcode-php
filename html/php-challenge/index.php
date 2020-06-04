@@ -44,7 +44,7 @@ $page = min($page, $maxPage);
 $start = ($page - 1) * 5;
 $start = max(0, $start);
 
-$posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id AND delete_flg=0 ORDER BY p.created DESC LIMIT ?, 5');
+$posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id AND delete_flg=0 ORDER BY p.id DESC LIMIT ?, 5');
 $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
 
@@ -103,7 +103,22 @@ function makeLink($value) {
 <?php
 foreach ($posts as $post):
 ?>
+
     <div class="msg">
+	<p class="day">
+		<?php
+		//RTした人の名前を表示する
+		$st = $db->prepare('SELECT * FROM members m, rt r WHERE m.id=r.member_id AND r.post_id=?');
+		$st->execute(array($post['id']));
+		$rtPerson = $st->fetch();
+		if((int)$post['rt'] === 1): ?>
+		<img src="images/rt.png" height="16" width="16">
+		<?php endif; ?>
+		<?php if((int)$post['rt'] === 1) {print($rtPerson['name']) . "さんがリツイート"; }
+		//↓ あとで消す
+		print $post['id']?>
+
+	</p>
     <img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
     <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
 	<div style="display:flex;">
@@ -129,20 +144,17 @@ endif;
 <p>
 <p style="font-size:15px; padding-left:20px;">
 <?php // rtテーブルのログインユーザー情報の変数化
-$statement = $db->prepare('SELECT * FROM rt WHERE member_id=? AND post_id=?');
-$statement->execute(array(h($_SESSION['id']),h($post['id'])));
-$rt = (int)($statement->fetch()['rt_flg']);
-?>
-<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($rt === 1) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
 
-<span style="color:<?php if($rt === 1) { print "#3CB371";} else { print '#999';} ?>">
+//当該ツイートのrt数を調べる（$count）
+$st = $db->prepare('SELECT SUM(rt_flg) FROM rt WHERE original_post_id=?');
+$st->execute(array($post['original_post_id']));
+$count = (int)$st->fetch()['SUM(rt_flg)'];
+?>
+<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($count > 0) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
+<span style="color:<?php if($count > 0) { print "#3CB371";} else { print '#999';} ?>">
 <?php // 当該ツイートの全ユーザーのRT数を出力
-$statement = $db->prepare('SELECT SUM(rt_flg) FROM rt WHERE post_id=?');
-$statement->bindParam(1,$post['id'],PDO::PARAM_INT);
-$statement->execute();
-$rts = (int)$statement->fetch()['SUM(rt_flg)'];
-if($rts > 0) {
-	print $rts;
+if ($count > 0) {
+	print $count;
 } else {
 	print "&nbsp;&nbsp;";
 }
@@ -161,6 +173,7 @@ $fav = (int)($statement->fetch()['fav_flg']);
 <span style="color:<?php if($fav === 1) { print 'red';} else { print '#999';} ?>">
 <?php
 // 当該ツイートの全ユーザーのいいね数を出力
+
 $statement = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=?');
 $statement->bindParam(1,$post['id'],PDO::PARAM_INT);
 $statement->execute();
