@@ -24,7 +24,7 @@ if (!empty($_POST)) {
 			$_POST['message'],
 			$_POST['reply_post_id']
 		));
-
+		$st = $db->exec('UPDATE posts SET original_post_id=id');
 		header('Location: index.php'); exit();
 	}
 }
