@@ -45,7 +45,6 @@ $page = min($page, $maxPage);
 $start = ($page - 1) * 5;
 $start = max(0, $start);
 
-//表示するpostの条件
 $posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id ORDER BY p.id DESC LIMIT ?, 5');
 $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
@@ -145,19 +144,20 @@ endif;
 </p>
 <p>
 <p style="font-size:15px; padding-left:20px;">
-<?php // rtテーブルのログインユーザー情報の変数化
+<?php
+// 当該ツイートのrt数を調べるための変数：$count
+	$st = $db->prepare('SELECT SUM(rt) FROM posts WHERE original_post_id=?');
+	$st->execute(array($post['original_post_id']));
+	$count = (int)$st->fetch()['SUM(rt)'];
+// ログイン者がRT済なら色を変更するための変数：$rtcheck
+	$st = $db->prepare('SELECT SUM(rt) FROM posts WHERE original_post_id=? AND post_member_id=?');
+	$st->execute(array($post['original_post_id'], $_SESSION['id']));
+	$rtcheck = (int)$st->fetch()['SUM(rt)'];
 
-//当該ツイートのrt数を調べる（$count）
-$st = $db->prepare('SELECT SUM(rt_flg) FROM rt WHERE original_post_id=?');
-$st->execute(array($post['original_post_id']));
-$count = (int)$st->fetch()['SUM(rt_flg)'];
-$st = $db->prepare('SELECT * FROM rt WHERE post_id=?');
-$st->execute(array($post['id']));
-$check = $st->fetch();
-// ↓RT総数が0より大きいものだけRT数を表示し、ログイン者がRTしたものだけ緑に変更する
+// ↓ RT総数が0より大きいものだけRT数を表示し、ログイン者がRTしたものだけ緑に変更する
 ?>
-<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($count > 0 && (int)$check['member_id'] === (int)$_SESSION['id']) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
-<span style="color:<?php if($count > 0 && (int)$check['member_id'] === (int)$_SESSION['id']) { print "#3CB371";} else { print '#999';} ?>">
+<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($rtcheck === 1 && (int)$post['post_member_id'] === (int)$_SESSION['id']) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
+<span style="color:<?php if ($rtcheck === 1 && (int)$post['post_member_id'] === (int)$_SESSION['id']) { print "#3CB371";} else { print '#999';} ?>">
 <?php // 当該ツイートの全ユーザーのRT数を出力
 if ($count > 0) {
 	print $count;
