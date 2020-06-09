@@ -140,8 +140,8 @@ li {
 }
 
 .msg .day ,
-.msg .day a ,{
+.msg .day a ,
+.msg .name {
 	font-size: 80%;
 	color: #999;
 }
-

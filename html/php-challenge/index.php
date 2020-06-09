@@ -17,9 +17,10 @@ if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
 // 投稿を記録する
 if (!empty($_POST)) {
 	if ($_POST['message'] != '') {
-		$message = $db->prepare('INSERT INTO posts SET member_id=?, message=?, reply_post_id=?, created=NOW()');
+		$message = $db->prepare('INSERT INTO posts SET member_id=?, post_member_id=?, message=?, reply_post_id=?, created=NOW()');
 		$message->execute(array(
 			$member['id'],
+			$_SESSION['id'],
 			$_POST['message'],
 			$_POST['reply_post_id']
 		));
@@ -44,6 +45,7 @@ $page = min($page, $maxPage);
 $start = ($page - 1) * 5;
 $start = max(0, $start);
 
+//表示するpostの条件
 $posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id AND delete_flg=0 ORDER BY p.id DESC LIMIT ?, 5');
 $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
@@ -105,7 +107,7 @@ foreach ($posts as $post):
 ?>
 
     <div class="msg">
-	<p class="day">
+	<p class="name">
 		<?php
 		//RTした人の名前を表示する
 		$st = $db->prepare('SELECT * FROM members m, rt r WHERE m.id=r.member_id AND r.post_id=?');
@@ -149,9 +151,13 @@ endif;
 $st = $db->prepare('SELECT SUM(rt_flg) FROM rt WHERE original_post_id=?');
 $st->execute(array($post['original_post_id']));
 $count = (int)$st->fetch()['SUM(rt_flg)'];
+$st = $db->prepare('SELECT * FROM rt WHERE post_id=?');
+$st->execute(array($post['id']));
+$check = $st->fetch();
+// ↓RT総数が0より大きいものだけRT数を表示し、ログイン者がRTしたものだけ緑に変更する
 ?>
-<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($count > 0) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
-<span style="color:<?php if($count > 0) { print "#3CB371";} else { print '#999';} ?>">
+<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($count > 0 && (int)$check['member_id'] === (int)$_SESSION['id']) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
+<span style="color:<?php if($count > 0 && (int)$check['member_id'] === (int)$_SESSION['id']) { print "#3CB371";} else { print '#999';} ?>">
 <?php // 当該ツイートの全ユーザーのRT数を出力
 if ($count > 0) {
 	print $count;
@@ -167,17 +173,22 @@ if ($count > 0) {
 $statement = $db->prepare('SELECT * FROM fav WHERE member_id=? AND post_id=?');
 $statement->execute(array(h($_SESSION['id']),h($post['id'])));
 $fav = (int)($statement->fetch()['fav_flg']);
+
+$st = $db->prepare('SELECT * FROM fav WHERE post_id=? AND member_id=?');
+$st->execute(array($post['id'], $_SESSION['id']));
+$check = $st->fetch();
+// ↓ログイン者がいいねしたものだけ赤に変更する(OK)
 ?>
-<a href="fav.php?id=<?php echo h($post['id']); ?>"><img alt="fav" src="images/fav<?php if ($fav === 1) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
-
-<span style="color:<?php if($fav === 1) { print 'red';} else { print '#999';} ?>">
+<a href="fav.php?id=<?php echo h($post['id']); ?>"><img alt="fav" src="images/fav<?php if ($fav === 1 && (int)$check['member_id'] === (int)$_SESSION['id']) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
+<span style="color:<?php if($fav === 1 && (int)$check['member_id'] === (int)$_SESSION['id']) { print 'red';} else { print '#999';} ?>">
 <?php
-// 当該ツイートの全ユーザーのいいね数を出力
-
-$statement = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=?');
-$statement->bindParam(1,$post['id'],PDO::PARAM_INT);
-$statement->execute();
-$favs = (int)$statement->fetch()['SUM(fav_flg)'];
+// いいねの総数が0より大きいツイートのみ、RT元のいいね数を表示する
+$st = $db->prepare('SELECT * FROM fav f, posts p WHERE f.post_id=p.id AND f.post_id=?');
+$st->execute(array($post['id']));
+$check = (int)$st->fetch()['original_post_id'];
+$st = $db->prepare('SELECT SUM(fav_flg) FROM fav f, posts p WHERE f.post_id=p.id AND post_id=? AND f.post_id=p.original_post_id');
+$st->execute(array($check));
+$favs = (int)$st->fetch()['SUM(fav_flg)'];
 if($favs > 0) {
 	print $favs;
 }
