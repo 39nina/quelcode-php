@@ -11,15 +11,15 @@ if (isset($_SESSION['id'])) {
 	$message = $messages->fetch();
 
 	if ($message['member_id'] == $_SESSION['id']) {
-		// 削除する
-		$st = $db->prepare('SELECT * FROM posts WHERE id=?');
-		$st->execute(array($id));
-		$org = $st->fetch();
-		$del = $db->prepare('UPDATE posts SET delete_flg=1 WHERE original_post_id=?');
-		$del->execute(array($org['original_post_id']));
-		// rtTBLのrt_flgも削除
-		$st = $db->prepare('UPDATE rt SET rt_flg=0 WHERE original_post_id');
-		$st->execute(array($org['original_post_id']));
+		// postsTBLからRT含めて当該投稿を削除する
+		// $st = $db->prepare('SELECT * FROM posts WHERE id=?');
+		// $st->execute(array($id));
+		// $org = $st->fetch();
+		$st = $db->prepare('DELETE FROM posts WHERE original_post_id=?');
+		$st->execute(array($message['original_post_id']));
+		// rtTBLからもデータ削除
+		$st = $db->prepare('DELETE FROM rt WHERE original_post_id=?');
+		$st->execute(array($message['original_post_id']));
 	}
 }
 
