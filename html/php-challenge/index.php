@@ -149,6 +149,7 @@ endif;
 	$st = $db->prepare('SELECT SUM(rt) FROM posts WHERE original_post_id=?');
 	$st->execute(array($post['original_post_id']));
 	$count = (int)$st->fetch()['SUM(rt)'];
+
 // ログイン者がRT済なら色を変更するための変数：$rtcheck
 	$st = $db->prepare('SELECT SUM(rt) FROM posts WHERE original_post_id=? AND post_member_id=?');
 	$st->execute(array($post['original_post_id'], $_SESSION['id']));
@@ -156,8 +157,8 @@ endif;
 
 // ↓ RT総数が0より大きいものだけRT数を表示し、ログイン者がRTしたものだけ緑に変更する
 ?>
-<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($rtcheck === 1 && (int)$post['post_member_id'] === (int)$_SESSION['id']) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
-<span style="color:<?php if ($rtcheck === 1 && (int)$post['post_member_id'] === (int)$_SESSION['id']) { print "#3CB371";} else { print '#999';} ?>">
+<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($rtcheck === 1) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
+<span style="color:<?php if ($rtcheck === 1) { print "#3CB371";} else { print '#999';} ?>">
 <?php // 当該ツイートの全ユーザーのRT数を出力
 if ($count > 0) {
 	print $count;
@@ -169,7 +170,7 @@ if ($count > 0) {
 
 </p>
 <p style="font-size:15px; padding-left:7px;">
-<?php // favテーブルのログインユーザー情報の変数化
+<?php
 $statement = $db->prepare('SELECT * FROM fav WHERE member_id=? AND post_id=?');
 $statement->execute(array(h($_SESSION['id']),h($post['id'])));
 $fav = (int)($statement->fetch()['fav_flg']);
@@ -177,17 +178,20 @@ $fav = (int)($statement->fetch()['fav_flg']);
 $st = $db->prepare('SELECT * FROM fav WHERE post_id=? AND member_id=?');
 $st->execute(array($post['id'], $_SESSION['id']));
 $check = $st->fetch();
-// ↓ログイン者がいいねしたものだけ赤に変更する(OK)
+
+// ログイン者がいいね済なら色を変更するための変数：$favcheck
+$st = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=? AND member_id=?');
+$st->execute(array($post['original_post_id'], $_SESSION['id']));
+$favcheck = (int)$st->fetch()['SUM(fav_flg)'];
+
+// ↓ログイン者がいいねしたものだけ赤に変更する
 ?>
-<a href="fav.php?id=<?php echo h($post['id']); ?>"><img alt="fav" src="images/fav<?php if ($fav === 1 && (int)$check['member_id'] === (int)$_SESSION['id']) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
-<span style="color:<?php if($fav === 1 && (int)$check['member_id'] === (int)$_SESSION['id']) { print 'red';} else { print '#999';} ?>">
+<a href="fav.php?id=<?php echo h($post['id']); ?>"><img alt="fav" src="images/fav<?php if ($favcheck === 1) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
+<span style="color:<?php if($favcheck === 1) { print 'red';} else { print '#999';} ?>">
 <?php
 // いいねの総数が0より大きいツイートのみ、RT元のいいね数を表示する
-$st = $db->prepare('SELECT * FROM fav f, posts p WHERE f.post_id=p.id AND f.post_id=?');
-$st->execute(array($post['id']));
-$check = (int)$st->fetch()['original_post_id'];
-$st = $db->prepare('SELECT SUM(fav_flg) FROM fav f, posts p WHERE f.post_id=p.id AND post_id=? AND f.post_id=p.original_post_id');
-$st->execute(array($check));
+$st = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=?');
+$st->execute(array($post['original_post_id']));
 $favs = (int)$st->fetch()['SUM(fav_flg)'];
 if($favs > 0) {
 	print $favs;
