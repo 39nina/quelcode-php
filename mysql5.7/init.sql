@@ -3,6 +3,7 @@ CREATE TABLE `fav` (
       `post_id` int(11) NOT NULL,
       `member_id` int(11) NOT NULL,
       `fav_flg` int(11) NOT NULL,
+      PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 CREATE TABLE `members` (
@@ -39,6 +40,7 @@ CREATE TABLE `rt` (
       `original_post_id` int(11) NOT NULL,
       `member_id` int(11) NOT NULL,
       `rt_flg` int(11) NOT NULL,
+      PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 INSERT INTO `prechallenge3` (`value`) VALUES (1),(17),(3),(13),(11),(7),(19),(5);
