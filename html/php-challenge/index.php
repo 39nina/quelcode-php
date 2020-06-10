@@ -131,7 +131,7 @@ h($post['reply_post_id']); ?>">
 endif;
 ?>
 <?php
-if ($_SESSION['id'] == $post['member_id']):
+if ((int)$_SESSION['id'] === (int)$post['member_id']):
 ?>
 [<a href="delete.php?id=<?php echo h($post['id']); ?>"
 style="color: #F33;">削除</a>]
