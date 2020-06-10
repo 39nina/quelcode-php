@@ -66,12 +66,12 @@ if ($flg === 1) {
 		$st->bindParam(5, $post['created']);
 		$st->execute();
 		//rtTBLにRT分のデータ追加
-			//押下するpostの自分がRTした分のidを取得する変数：$check
-			$st = $db->prepare('SELECT * FROM posts WHERE original_post_id=? AND post_member_id=? AND id<>original_post_id');
-			$st->bindParam(1, $rtorg, PDO::PARAM_INT);
-			$st->bindParam(2, $_SESSION['id'], PDO::PARAM_INT);
-			$st->execute();
-			$check = $st->fetch()['id'];
+		//押下するpostの自分がRTした分のidを取得する変数：$check
+		$st = $db->prepare('SELECT * FROM posts WHERE original_post_id=? AND post_member_id=? AND id<>original_post_id');
+		$st->bindParam(1, $rtorg, PDO::PARAM_INT);
+		$st->bindParam(2, $_SESSION['id'], PDO::PARAM_INT);
+		$st->execute();
+		$check = $st->fetch()['id'];
 		$st = $db->prepare('INSERT INTO rt SET post_id=?, original_post_id=?, member_id=?, rt_flg=1');
 		$st->bindParam(1, $check, PDO::PARAM_INT);
 		$st->bindParam(2, $rtorg, PDO::PARAM_INT);
