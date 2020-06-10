@@ -108,17 +108,14 @@ foreach ($posts as $post):
     <div class="msg">
 	<p class="name">
 		<?php
-		//RTした人の名前を表示する
+		// RTした人の名前を表示する
 		$st = $db->prepare('SELECT * FROM members m, rt r WHERE m.id=r.member_id AND r.post_id=?');
 		$st->execute(array($post['id']));
 		$rtPerson = $st->fetch();
 		if((int)$post['rt'] === 1): ?>
 		<img src="images/rt.png" height="16" width="16">
 		<?php endif; ?>
-		<?php if((int)$post['rt'] === 1) {print($rtPerson['name']) . "さんがリツイート"; }
-		//↓ あとで消す
-		print $post['id']?>
-
+		<?php if((int)$post['rt'] === 1) {print($rtPerson['name']) . "さんがリツイート"; } ?>
 	</p>
     <img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
     <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
@@ -155,11 +152,12 @@ endif;
 	$st->execute(array($post['original_post_id'], $_SESSION['id']));
 	$rtcheck = (int)$st->fetch()['SUM(rt)'];
 
-// ↓ RT総数が0より大きいものだけRT数を表示し、ログイン者がRTしたものだけ緑に変更する
+// RT総数が0より大きいものだけRT数を表示し、ログイン者がRTしたものだけ緑に変更する
 ?>
 <a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($rtcheck === 1) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
 <span style="color:<?php if ($rtcheck === 1) { print "#3CB371";} else { print '#999';} ?>">
-<?php // 当該ツイートの全ユーザーのRT数を出力
+<?php
+// RTの総数が0より大きいツイートのみ、RT元のいいね数を表示する
 if ($count > 0) {
 	print $count;
 } else {
@@ -184,7 +182,7 @@ $st = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=? AND member_id=?
 $st->execute(array($post['original_post_id'], $_SESSION['id']));
 $favcheck = (int)$st->fetch()['SUM(fav_flg)'];
 
-// ↓ログイン者がいいねしたものだけ赤に変更する
+// ログイン者がいいねしたツイートだけハートと数字を赤に変更する
 ?>
 <a href="fav.php?id=<?php echo h($post['id']); ?>"><img alt="fav" src="images/fav<?php if ($favcheck === 1) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
 <span style="color:<?php if($favcheck === 1) { print 'red';} else { print '#999';} ?>">
