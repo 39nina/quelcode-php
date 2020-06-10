@@ -2,14 +2,9 @@
 session_start();
 require('dbconnect.php');
 
-$st = $db->prepare('SELECT * FROM posts WHERE id=?');
-$st->bindParam(1, $_REQUEST['id'], PDO::PARAM_INT);
-$st->execute();
-$post = $st->fetch();
-
 // 押下するいいねボタンの元ツイートのidを取得
 $st = $db->prepare('SELECT * FROM posts WHERE id=?');
-$st->bindParam(1, $post['id'], PDO::PARAM_INT);
+$st->bindParam(1, $_REQUEST['id'], PDO::PARAM_INT);
 $st->execute();
 $orgid = $st->fetch()['original_post_id'];
 
