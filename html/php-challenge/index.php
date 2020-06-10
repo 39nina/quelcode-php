@@ -169,14 +169,6 @@ if ($count > 0) {
 </p>
 <p style="font-size:15px; padding-left:7px;">
 <?php
-$statement = $db->prepare('SELECT * FROM fav WHERE member_id=? AND post_id=?');
-$statement->execute(array(h($_SESSION['id']),h($post['id'])));
-$fav = (int)($statement->fetch()['fav_flg']);
-
-$st = $db->prepare('SELECT * FROM fav WHERE post_id=? AND member_id=?');
-$st->execute(array($post['id'], $_SESSION['id']));
-$check = $st->fetch();
-
 // ログイン者がいいね済なら色を変更するための変数：$favcheck
 $st = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=? AND member_id=?');
 $st->execute(array($post['original_post_id'], $_SESSION['id']));
