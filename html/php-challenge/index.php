@@ -17,13 +17,14 @@ if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
 // 投稿を記録する
 if (!empty($_POST)) {
 	if ($_POST['message'] != '') {
-		$message = $db->prepare('INSERT INTO posts SET member_id=?, message=?, reply_post_id=?, created=NOW()');
+		$message = $db->prepare('INSERT INTO posts SET member_id=?, post_member_id=?, message=?, reply_post_id=?, created=NOW()');
 		$message->execute(array(
 			$member['id'],
+			$_SESSION['id'],
 			$_POST['message'],
 			$_POST['reply_post_id']
 		));
-
+		$st = $db->exec('UPDATE posts SET original_post_id=id');
 		header('Location: index.php'); exit();
 	}
 }
@@ -44,7 +45,7 @@ $page = min($page, $maxPage);
 $start = ($page - 1) * 5;
 $start = max(0, $start);
 
-$posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id ORDER BY p.created DESC LIMIT ?, 5');
+$posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id ORDER BY p.id DESC LIMIT ?, 5');
 $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
 
@@ -103,10 +104,23 @@ function makeLink($value) {
 <?php
 foreach ($posts as $post):
 ?>
+
     <div class="msg">
+	<p class="name">
+		<?php
+		// RTした人の名前を表示する
+		$st = $db->prepare('SELECT * FROM members m, rt r WHERE m.id=r.member_id AND r.post_id=?');
+		$st->execute(array($post['id']));
+		$rtPerson = $st->fetch();
+		if((int)$post['rt'] === 1): ?>
+		<img src="images/rt.png" height="16" width="16">
+		<?php endif; ?>
+		<?php if((int)$post['rt'] === 1) {print($rtPerson['name']) . "さんがリツイート"; } ?>
+	</p>
     <img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
     <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
-    <p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
+	<div style="display:flex;">
+	<p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
 		<?php
 if ($post['reply_post_id'] > 0):
 ?>
@@ -117,15 +131,67 @@ h($post['reply_post_id']); ?>">
 endif;
 ?>
 <?php
-if ($_SESSION['id'] == $post['member_id']):
+if ((int)$_SESSION['id'] === (int)$post['member_id']):
 ?>
 [<a href="delete.php?id=<?php echo h($post['id']); ?>"
 style="color: #F33;">削除</a>]
 <?php
 endif;
 ?>
-    </p>
-    </div>
+</p>
+<p>
+<p style="font-size:15px; padding-left:20px;">
+<?php
+// 当該ツイートのrt数を調べるための変数：$count
+	$st = $db->prepare('SELECT SUM(rt) FROM posts WHERE original_post_id=?');
+	$st->execute(array($post['original_post_id']));
+	$count = (int)$st->fetch()['SUM(rt)'];
+
+// ログイン者がRT済なら色を変更するための変数：$rtcheck
+	$st = $db->prepare('SELECT SUM(rt) FROM posts WHERE original_post_id=? AND post_member_id=?');
+	$st->execute(array($post['original_post_id'], $_SESSION['id']));
+	$rtcheck = (int)$st->fetch()['SUM(rt)'];
+
+// RT総数が0より大きいものだけRT数を表示し、ログイン者がRTしたものだけ緑に変更する
+?>
+<a href="rt.php?id=<?php echo h($post['id']); ?>"><img alt="retweet" src="images/rt<?php if ($rtcheck === 1) { print 2; } ?>.png" style="height:16px; width:16px;"></a>
+<span style="color:<?php if ($rtcheck === 1) { print "#3CB371";} else { print '#999';} ?>">
+<?php
+// RTの総数が0より大きいツイートのみ、RT元のいいね数を表示する
+if ($count > 0) {
+	print $count;
+} else {
+	print "&nbsp;&nbsp;";
+}
+?>
+</span>
+
+</p>
+<p style="font-size:15px; padding-left:7px;">
+<?php
+// ログイン者がいいね済なら色を変更するための変数：$favcheck
+$st = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=? AND member_id=?');
+$st->execute(array($post['original_post_id'], $_SESSION['id']));
+$favcheck = (int)$st->fetch()['SUM(fav_flg)'];
+
+// ログイン者がいいねしたツイートだけハートと数字を赤に変更する
+?>
+<a href="fav.php?id=<?php echo h($post['id']); ?>"><img alt="fav" src="images/fav<?php if ($favcheck === 1) { print 2; } ?>.png" style="height:14px; width:14px;"></a>
+<span style="color:<?php if($favcheck === 1) { print 'red';} else { print '#999';} ?>">
+<?php
+// いいねの総数が0より大きいツイートのみ、RT元のいいね数を表示する
+$st = $db->prepare('SELECT SUM(fav_flg) FROM fav WHERE post_id=?');
+$st->execute(array($post['original_post_id']));
+$favs = (int)$st->fetch()['SUM(fav_flg)'];
+if($favs > 0) {
+	print $favs;
+}
+?>
+</span>
+</p>
+</p>
+</div>
+</div>
 <?php
 endforeach;
 ?>

@@ -138,9 +138,10 @@ li {
 .msg p {
 	margin: 0;
 }
-.msg .day,
-.msg .day a {
+
+.msg .day ,
+.msg .day a ,
+.msg .name {
 	font-size: 80%;
 	color: #999;
 }
-
